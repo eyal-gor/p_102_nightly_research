@@ -2,6 +2,8 @@
 
 > A nightly equity-research analyst that runs on **your own machine** — one AI agent per ticker, ~$0 marginal cost.
 
+![nightly-research — research agents working your watchlist overnight](https://raw.githubusercontent.com/eyal-gor/p_102_nightly_research/main/hero.png)
+
 Point it at a watchlist. Every night it runs a research agent for each ticker, updates a living profile, and writes you a digest of **what changed** — so the companies whose story keeps improving rise to the top over time.
 
 It runs on your own compute through **[cerver](https://cerver.ai)**, on the Claude/Codex subscription you already pay for. So researching 50 tickers every night costs roughly nothing — instead of a metered API bill that scales with every step the agents take.
