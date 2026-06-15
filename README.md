@@ -1,12 +1,12 @@
 # nightly-research
 
-> A nightly equity-research analyst that runs on **compute you control** (your own machine or a remote box/cloud sandbox) — one AI agent per ticker, ~$0 marginal cost.
+> A nightly equity-research analyst that runs on **compute you control** (your own machine or a remote box/cloud sandbox) — one AI agent per ticker, on the flat-rate subscription you already pay for. No per-token API bill on top.
 
 ![nightly-research — research agents working your watchlist overnight](https://raw.githubusercontent.com/eyal-gor/p_102_nightly_research/main/hero.png)
 
 Point it at a watchlist. Every night it runs a research agent for each ticker, updates a living profile, and writes you a digest of **what changed** — so the companies whose story keeps improving rise to the top over time.
 
-It runs on your own compute through **[cerver](https://cerver.ai)**, on the Claude/Codex subscription you already pay for. So researching 50 tickers every night costs roughly nothing — instead of a metered API bill that scales with every step the agents take.
+It runs on your own compute through **[cerver](https://cerver.ai)**, on the Claude/Codex subscription you already pay for — so researching 50 tickers every night doesn't add a metered API bill that scales with every step the agents take. (You're using the flat-rate plan you already have, not paying per token on top.)
 
 ```
 nightly add AAPL NVDA TSM ASML
@@ -16,7 +16,7 @@ nightly digest              # what changed — improving stories first
 
 ## Why this exists
 
-Agentic research is token-hungry: 50 tickers × nightly × multi-step reasoning is a real monthly bill on a metered API. `nightly-research` hands each ticker to **cerver**, which runs the agent on compute you control — your own machine, or a remote box / cloud sandbox you've set up — and bills it to your flat-rate subscription. Marginal cost ≈ **$0**, so you can afford to research broadly and let the signal accumulate.
+Agentic research is token-hungry: 50 tickers × nightly × multi-step reasoning is a real monthly bill on a metered API. `nightly-research` hands each ticker to **cerver**, which runs the agent on compute you control — your own machine, or a remote box / cloud sandbox you've set up — on your flat-rate subscription instead of a metered API. No per-token bill that scales with every agent step, so you can afford to research broadly and let the signal accumulate.
 
 ## How it works
 
