@@ -1,6 +1,6 @@
 # nightly-research
 
-> A nightly equity-research analyst that runs on **your own machine** — one AI agent per ticker, ~$0 marginal cost.
+> A nightly equity-research analyst that runs on **compute you control** (your own machine or a remote box/cloud sandbox) — one AI agent per ticker, ~$0 marginal cost.
 
 ![nightly-research — research agents working your watchlist overnight](https://raw.githubusercontent.com/eyal-gor/p_102_nightly_research/main/hero.png)
 
@@ -10,13 +10,13 @@ It runs on your own compute through **[cerver](https://cerver.ai)**, on the Clau
 
 ```
 nightly add AAPL NVDA TSM ASML
-nightly run                 # researches every ticker tonight, on your machine
+nightly run                 # researches every ticker tonight, on your compute
 nightly digest              # what changed — improving stories first
 ```
 
 ## Why this exists
 
-Agentic research is token-hungry: 50 tickers × nightly × multi-step reasoning is a real monthly bill on a metered API. `nightly-research` hands each ticker to **cerver**, which runs the agent on hardware you own and bills it to your flat-rate subscription. Marginal cost ≈ **$0**, so you can afford to research broadly and let the signal accumulate.
+Agentic research is token-hungry: 50 tickers × nightly × multi-step reasoning is a real monthly bill on a metered API. `nightly-research` hands each ticker to **cerver**, which runs the agent on compute you control — your own machine, or a remote box / cloud sandbox you've set up — and bills it to your flat-rate subscription. Marginal cost ≈ **$0**, so you can afford to research broadly and let the signal accumulate.
 
 ## How it works
 
