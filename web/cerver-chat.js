@@ -74,7 +74,19 @@
       this.history = [];
       this._render();
       this._restore();
+      const cssAttr = this.getAttribute("css");
+      if (cssAttr) this._applyCss(cssAttr);
       if (this.pk) this._loadPublicConfig();
+    }
+
+    // Inject custom CSS into the shadow DOM — set by the dashboard "Design" step
+    // (agent-generated) or a css="" attribute. Scoped to the widget, so it can
+    // restyle anything without touching the host page.
+    _applyCss(css) {
+      const root = this.shadowRoot; if (!root) return;
+      let s = root.getElementById("customcss");
+      if (!s) { s = document.createElement("style"); s.id = "customcss"; root.appendChild(s); }
+      s.textContent = css || "";
     }
 
     _loadLog() { try { return JSON.parse(localStorage.getItem(LS_LOG) || "[]"); } catch { return []; } }
@@ -100,6 +112,7 @@
           }
         }
         if (d.branding && d.branding.accent) this.style.setProperty("--accent", d.branding.accent);
+        if (d.branding && d.branding.css) this._applyCss(d.branding.css);
       } catch (e) { /* keep defaults */ }
     }
 
