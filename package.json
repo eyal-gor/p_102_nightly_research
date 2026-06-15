@@ -1,0 +1,17 @@
+{
+  "name": "nightly-research",
+  "version": "0.1.0",
+  "description": "A nightly equity-research agent fleet that runs on your own compute via cerver. One agent per ticker, ~$0 marginal.",
+  "type": "module",
+  "bin": {
+    "nightly": "bin/nightly.mjs"
+  },
+  "scripts": {
+    "start": "node bin/nightly.mjs"
+  },
+  "keywords": ["ai", "agents", "research", "investing", "cerver", "cron", "self-hosted"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
