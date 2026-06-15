@@ -36,8 +36,8 @@ cerver login
 **2. Get this repo** and link the `nightly` command:
 
 ```bash
-git clone https://github.com/<you>/nightly-research
-cd nightly-research
+git clone https://github.com/eyal-gor/p_102_nightly_research
+cd p_102_nightly_research
 npm link          # gives you `nightly`; or just run `node bin/nightly.mjs <cmd>`
 ```
 
