@@ -43,7 +43,7 @@
     .msgs { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
     .turn { font-size: 13.5px; line-height: 1.55; }
     .turn .who { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: #6c685c; margin-bottom: 3px; }
-    .turn.user .who { color: #d2588f; }
+    .turn.user .who { color: var(--accent, #d2588f); }
     .turn .body { white-space: pre-wrap; }
     .turn .body.cur::after { content: "▋"; color: #df7536; animation: blink 1.1s steps(1) infinite; }
     @keyframes blink { 50% { opacity: 0; } }
@@ -52,7 +52,7 @@
                  background: #fff; color: #1b1a16; outline: none; }
     .row input:focus { border-color: #1b1a16; }
     .row button { font: inherit; font-size: 13px; padding: 9px 16px; border: 0; background: #1b1a16; color: #f4f1e8; cursor: pointer; }
-    .row button:hover { background: #d2588f; }
+    .row button:hover { background: var(--accent, #d2588f); }
     .row button:disabled { opacity: .4; cursor: default; }
     .foot { padding: 7px 14px; border-top: 1px solid #d9d3c2; font-size: 10.5px; color: #6c685c; text-align: center; }
     .foot a { color: #6c685c; }
@@ -74,11 +74,34 @@
       this.history = [];
       this._render();
       this._restore();
+      if (this.pk) this._loadPublicConfig();
     }
 
     _loadLog() { try { return JSON.parse(localStorage.getItem(LS_LOG) || "[]"); } catch { return []; } }
     _saveLog() { try { localStorage.setItem(LS_LOG, JSON.stringify(this.history.slice(-40))); } catch (e) { /* full */ } }
     _restore() { this.history = this._loadLog(); for (const m of this.history) this._addTurn(m.role, m.text, m.who); }
+
+    // When a publishable key is set, pull the app's configured model list +
+    // branding from the gateway (prompt/context/tools stay server-side). Falls
+    // back silently to the attribute/default models if it can't.
+    async _loadPublicConfig() {
+      try {
+        const r = await fetch(this.base + "/v2/chat/public-config", { headers: { Authorization: "Bearer " + this.pk } });
+        if (!r.ok) return;
+        const d = await r.json();
+        if (Array.isArray(d.models) && d.models.length) {
+          this.modelList = d.models.map((m) => [m.label || m.id, m.id]);
+          this.model = this.modelList[0][1];
+          this.modelLabel = this.modelList[0][0];
+          const sel = this.$("model");
+          if (sel) {
+            sel.innerHTML = "";
+            this.modelList.forEach(([label, id]) => { const o = document.createElement("option"); o.value = id; o.textContent = label; sel.appendChild(o); });
+          }
+        }
+        if (d.branding && d.branding.accent) this.style.setProperty("--accent", d.branding.accent);
+      } catch (e) { /* keep defaults */ }
+    }
 
     _render() {
       const root = this.attachShadow({ mode: "open" });
@@ -99,7 +122,7 @@
       this.$("clr").addEventListener("click", () => {
         this.history = []; this._saveLog();
         this.$("msgs").innerHTML = ""; this.$("cost").textContent = "";
-        localStorage.removeItem(LS_SID); this.session = null;
+        this._resetSession();
       });
       const sel = this.$("model");
       this.modelList.forEach(([label, id]) => {
@@ -133,7 +156,11 @@
       }
       this.key = key;
       const cached = localStorage.getItem(LS_SID);
-      if (cached) { this.session = cached; return this.session; }
+      // Only reuse a cached session if THIS key created it. A session is owned
+      // by the account of the key that made it, so reusing one across keys (e.g.
+      // an old anonymous session under a new pk) makes run-llm 403 with
+      // "session belongs to another account".
+      if (cached && localStorage.getItem(LS_SID + "_k") === key) { this.session = cached; return this.session; }
       let uid = localStorage.getItem(LS_UID);
       if (!uid) { uid = uuid(); localStorage.setItem(LS_UID, uid); }
       const s = await fetch(this.base + "/v2/sessions", {
@@ -146,8 +173,11 @@
       this.session = sd.session_id || (sd.session && sd.session.sessionId);
       if (!this.session) throw new Error("no session id returned");
       localStorage.setItem(LS_SID, this.session);
+      localStorage.setItem(LS_SID + "_k", key);
       return this.session;
     }
+
+    _resetSession() { this.session = null; localStorage.removeItem(LS_SID); localStorage.removeItem(LS_SID + "_k"); }
 
     async send(text) {
       if (this.busy || !text || !text.trim()) return;
@@ -159,17 +189,22 @@
       const bubble = this._addTurn("assistant", "", who);
       bubble.classList.add("cur");
       try {
-        const sid = await this._ensureSession();
         // run-llm is stateless, so we thread the recent turns into the prompt
         // ourselves — that's the conversation memory.
         const prior = this.history.slice(0, -1).slice(-12)
           .map((m) => (m.role === "user" ? "User: " : "Assistant: ") + m.text).join("\n");
         const input = prior ? prior + "\n\nUser: " + text : text;
-        const res = await fetch(`${this.base}/v2/sessions/${sid}/run-llm`, {
-          method: "POST",
-          headers: { Authorization: "Bearer " + this.key, "Content-Type": "application/json" },
-          body: JSON.stringify({ input, model: this.model, systemPrompt: this.systemPrompt || undefined }),
-        });
+        const run = async () => {
+          const sid = await this._ensureSession();
+          return fetch(`${this.base}/v2/sessions/${sid}/run-llm`, {
+            method: "POST",
+            headers: { Authorization: "Bearer " + this.key, "Content-Type": "application/json" },
+            body: JSON.stringify({ input, model: this.model, systemPrompt: this.systemPrompt || undefined }),
+          });
+        };
+        let res = await run();
+        // Stale or foreign session (403/404) → drop it and try once with a fresh one.
+        if (res.status === 403 || res.status === 404) { this._resetSession(); res = await run(); }
         if (!res.ok || !res.body) throw new Error("run failed (" + res.status + ")");
         const acc = await this._consume(res, bubble);
         this.history.push({ role: "assistant", text: acc, who });
