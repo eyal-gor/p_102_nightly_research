@@ -72,7 +72,7 @@ nightly dashboard   # scored watchlist + profile reader + a chat docked in the c
 nightly chat        # just the chat, full-width
 ```
 
-Both render a local page with an embedded **[cerver-chat](https://cerver.ai)** widget — multi-model (switch live), streaming, with conversation memory — primed on your own research so you can ask about your watchlist. It works with **zero setup**: an anonymous trial session, no key needed.
+Both render a local page with an embedded **[cerver-chat](https://github.com/eyal-gor/p_103_cerver_chat)** widget — multi-model (switch live), streaming, with conversation memory — primed on your own research so you can ask about your watchlist. With **zero setup** it runs on a shared free-trial session (cheap model, a small global daily cap — fine for a taste, may be used up at busy times). Run `cerver login` or set a key (below) to run it on **your own** account: your model, your compute, no shared cap.
 
 To run the chat under *your* cerver account (so the sessions show in your dashboard, on your compute/models), set your nightly-research app key:
 
